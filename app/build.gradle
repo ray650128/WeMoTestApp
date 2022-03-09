@@ -1,6 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'realm-android'
 }
 
 android {
@@ -47,4 +49,6 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:2.3.1"
     implementation "androidx.navigation:navigation-ui-ktx:2.3.1"
 
+    // Gson
+    implementation 'com.google.code.gson:gson:2.9.0'
 }
