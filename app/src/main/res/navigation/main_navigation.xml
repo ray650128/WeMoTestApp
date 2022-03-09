@@ -11,7 +11,7 @@
         android:label="fragment_place_list"
         tools:layout="@layout/fragment_place_list" >
         <action
-            android:id="@+id/toPlaceDetail"
+            android:id="@+id/listToPlaceDetail"
             app:destination="@id/placeFragment" />
         <action
             android:id="@+id/toMapView"
@@ -21,7 +21,14 @@
         android:id="@+id/mapViewFragment"
         android:name="com.ray650128.wemotestapp.view.fragment.MapViewFragment"
         android:label="fragment_map_view"
-        tools:layout="@layout/fragment_map_view" />
+        tools:layout="@layout/fragment_map_view" >
+        <action
+            android:id="@+id/toPlaceList"
+            app:destination="@id/placeListFragment" />
+        <action
+            android:id="@+id/mapToPlaceDetail"
+            app:destination="@id/placeFragment" />
+    </fragment>
     <fragment
         android:id="@+id/placeFragment"
         android:name="com.ray650128.wemotestapp.view.fragment.PlaceFragment"
