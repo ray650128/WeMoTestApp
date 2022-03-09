@@ -14,6 +14,8 @@ class PlaceListAdapter : ListAdapter<Place, PlaceListAdapter.MyViewHolder>(Place
 
     var onItemClick: ((data: Place) -> Unit)? = null
 
+    var onItemLongClick: ((data: Place) -> Unit)? = null
+
     private lateinit var mContext: Context
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaceListAdapter.MyViewHolder {
@@ -30,6 +32,10 @@ class PlaceListAdapter : ListAdapter<Place, PlaceListAdapter.MyViewHolder>(Place
             itemView.setOnClickListener {
                 onItemClick?.invoke(data)
             }
+            itemView.setOnLongClickListener {
+                onItemLongClick?.invoke(data)
+                true
+            }
         }
     }
 
@@ -38,8 +44,10 @@ class PlaceListAdapter : ListAdapter<Place, PlaceListAdapter.MyViewHolder>(Place
             textTitle.text = data.title
             textUpdateTime.text = data.updateTime
 
+            val firstPhotoUrl = if (data.photos.isNullOrEmpty()) null else data.photos?.get(0)
+
             Glide.with(mContext)
-                .load(data.photos?.get(0))
+                .load(firstPhotoUrl)
                 .centerCrop()
                 .placeholder(R.mipmap.ic_launcher)
                 .thumbnail(0.1f)
