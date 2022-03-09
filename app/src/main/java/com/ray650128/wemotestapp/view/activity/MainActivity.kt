@@ -1,4 +1,4 @@
-package com.ray650128.wemotestapp
+package com.ray650128.wemotestapp.view.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
