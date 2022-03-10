@@ -1,13 +1,19 @@
 package com.ray650128.wemotestapp.view.fragment
 
+import android.annotation.SuppressLint
+import android.app.Activity.RESULT_OK
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.FileProvider
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +26,7 @@ import com.ray650128.wemotestapp.model.Place
 import com.ray650128.wemotestapp.view.adapter.PlacePhotoAdapter
 import com.ray650128.wemotestapp.viewModel.PlaceListViewModel
 import io.realm.RealmList
+import java.io.File
 import java.text.SimpleDateFormat
 
 
@@ -38,6 +45,9 @@ class PlaceFragment : Fragment() {
     private var photoList: ArrayList<String> = arrayListOf()
 
     private var photoListAdapter: PlacePhotoAdapter = PlacePhotoAdapter()
+
+    private var photoPath: String = ""
+    private var currentPhotoIndex: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +90,82 @@ class PlaceFragment : Fragment() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == RESULT_OK && requestCode == PICTURE_FROM_GALLERY) {
+            if (data != null && data.data != null) {
+                photoPath = getPathFromUri(data.data!!)
+                if (photoList.size < 3) {
+                    photoList.add(photoPath)
+                } else {
+                    photoList[currentPhotoIndex] = photoPath
+                }
+                photoListAdapter.updateData(photoList, true)
+            }
+        }
+
+        if (resultCode == RESULT_OK && requestCode == PICTURE_FROM_CAMERA) {
+            if (photoList.size < 3) {
+                photoList.add(photoPath)
+            } else {
+                photoList[currentPhotoIndex] = photoPath
+            }
+            photoListAdapter.updateData(photoList, true)
+        }
+    }
+
+    private fun showPhotoPickerMenu() {
+        val popupMenu = AlertDialog.Builder(requireContext()).apply {
+            setTitle("選擇來源")
+            setCancelable(true)
+            setItems(R.array.gallery_menu) { dialog, which ->
+                dialog.dismiss()
+                when (which) {
+                    0 -> callGallery()
+                    1 -> callCamera()
+                }
+            }
+        }
+        popupMenu.show()
+    }
+
+    private fun callGallery() {
+        val gallery = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+        startActivityForResult(gallery, PICTURE_FROM_GALLERY)
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private fun callCamera() {
+        val camera = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        val date = SimpleDateFormat("yyyyMMddHHmmss").format(System.currentTimeMillis())
+        //先新增一張照片
+        val tmpFile = File(context?.getExternalFilesDir(null), "image_$date.jpg")
+
+        //建立uri，這邊拿到的格式就會是 content://了
+        val outputFileUri = FileProvider.getUriForFile(
+            requireActivity(),
+            "com.ray650128.wemotestapp.provider",
+            tmpFile
+        )
+
+        photoPath = tmpFile.absolutePath
+
+        //指定為輸出檔案的位置
+        camera.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri)
+        startActivityForResult(camera, PICTURE_FROM_CAMERA)
+    }
+
+    private fun getPathFromUri(uri: Uri): String {
+        val projection = arrayOf(MediaStore.MediaColumns.DATA)
+        val cursor = requireActivity().contentResolver.query(uri, projection, null, null, null)
+        val columnIndex: Int? = cursor?.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
+        cursor?.moveToFirst()
+        val result: String = columnIndex?.let { cursor.getString(it) } ?: ""
+        cursor?.close()
+        return result
+    }
+
     private fun viewModeCase(data: Place?) = (binding as FragmentPlaceBinding).apply {
         if (data == null) return@apply
         textTitle.text = data.title
@@ -88,16 +174,22 @@ class PlaceFragment : Fragment() {
 
         photoList = ArrayList(data.photos?.toList() ?: arrayListOf())
 
-        photoListAdapter.updateData(photoList)
+        if (photoList.isNotEmpty()) {
+            photoListAdapter.updateData(photoList)
 
-        listPhoto.apply {
-            adapter = photoListAdapter
-            layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
+            listPhoto.apply {
+                isVisible = true
+                adapter = photoListAdapter
+                layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
+            }
+        } else {
+            listPhoto.isVisible = false
         }
 
         btnAction.text = requireActivity().getString(R.string.text_button_close)
         btnAction.setOnClickListener {
             findNavController().navigateUp()
+            viewModel.placeData.postValue(null)
         }
     }
 
@@ -109,7 +201,12 @@ class PlaceFragment : Fragment() {
 
         photoList = ArrayList(data.photos?.toList() ?: arrayListOf())
 
-        photoListAdapter.updateData(photoList)
+        photoListAdapter.updateData(photoList, true)
+
+        photoListAdapter.onItemClick = {
+            currentPhotoIndex = it
+            showPhotoPickerMenu()
+        }
 
         listPhoto.apply {
             adapter = photoListAdapter
@@ -131,9 +228,17 @@ class PlaceFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
     private fun addModeCase() = (binding as FragmentPlaceEditModeBinding).apply {
         btnAction.text = requireActivity().getString(R.string.text_button_add)
         textUpdateDate.text = SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(System.currentTimeMillis())
+
+        photoListAdapter.updateData(photoList, true)
+
+        photoListAdapter.onItemClick = {
+            currentPhotoIndex = it
+            showPhotoPickerMenu()
+        }
 
         listPhoto.apply {
             adapter = photoListAdapter
@@ -158,5 +263,8 @@ class PlaceFragment : Fragment() {
         const val VIEW_MODE = 0
         const val EDIT_MODE = 1
         const val ADD_MODE = 2
+
+        const val PICTURE_FROM_GALLERY = 1001
+        const val PICTURE_FROM_CAMERA = 1002
     }
 }

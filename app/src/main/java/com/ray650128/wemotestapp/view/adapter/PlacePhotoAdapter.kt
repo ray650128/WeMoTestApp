@@ -12,7 +12,9 @@ class PlacePhotoAdapter : RecyclerView.Adapter<PlacePhotoAdapter.MyViewHolder>()
 
     private lateinit var mContext: Context
 
-    private val mData: ArrayList<String?> = arrayListOf(null, null, null)
+    private var mData: ArrayList<String> = arrayListOf()
+
+    var onItemClick: ((position: Int) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         mContext = parent.context
@@ -24,30 +26,27 @@ class PlacePhotoAdapter : RecyclerView.Adapter<PlacePhotoAdapter.MyViewHolder>()
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         holder.bindData(mData[position])
         holder.itemView.setOnClickListener {
-
+            onItemClick?.invoke(position)
         }
     }
 
     override fun getItemCount(): Int = mData.size
 
-    fun updateData(data: List<String>) {
-        for (i in mData.indices) {
-            if (data.isNullOrEmpty()) {
-                mData[i] = null
-            } else {
-                mData[i] = data[i]
-            }
-            notifyItemChanged(i)
+    fun updateData(data: List<String>, showPlaceholder: Boolean = false) {
+        mData = ArrayList(data)
+        if (mData.size < 3 && showPlaceholder) {
+            mData.add("empty_placeholder")
         }
+        notifyDataSetChanged()
     }
 
     fun getPhotoList(): ArrayList<String> {
-        val tmpList = ArrayList<String>()
-        for (i in mData.indices) {
-            if (mData[i] == null) continue
-            tmpList.add(mData[i]!!)
+        val tmpData = ArrayList<String>()
+        for (data in mData) {
+            if (data == "empty_placeholder") continue
+            tmpData.add(data)
         }
-        return tmpList
+        return tmpData
     }
 
     inner class MyViewHolder(private val binding: ItemPlacePhotoBinding): RecyclerView.ViewHolder(binding.root) {
