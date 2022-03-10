@@ -1,13 +1,16 @@
 package com.ray650128.wemotestapp.view.activity
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigation.findNavController
 import com.google.android.material.tabs.TabLayout
 import com.ray650128.wemotestapp.R
 import com.ray650128.wemotestapp.databinding.ActivityMainBinding
+import com.ray650128.wemotestapp.viewModel.PlaceListViewModel
 
 class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
 
@@ -16,6 +19,8 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
     private val navController: NavController by lazy {
         findNavController(this@MainActivity, R.id.main_fragment)
     }
+
+    private val viewModel: PlaceListViewModel by viewModels()
 
     private val navOptions: NavOptions by lazy {
         NavOptions.Builder()
@@ -32,14 +37,24 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         setSupportActionBar(binding.toolbar)
 
         initTabLayout()
+
+        viewModel.isPlaceDetailShow.observe(this) { isShow ->
+            if (isShow) {
+                binding.tabLayout.isVisible = false
+                binding.toolbar.isVisible = true
+            } else {
+                binding.tabLayout.isVisible = true
+                binding.toolbar.isVisible = false
+            }
+        }
     }
 
     private fun initTabLayout() = binding.apply {
         val listTab = tabLayout.newTab().apply {
-            text = "列表"
+            text = getString(R.string.text_button_list)
         }
         val listMap = tabLayout.newTab().apply {
-            text = "地圖"
+            text = getString(R.string.text_button_map)
         }
         tabLayout.apply {
             addTab(listTab)

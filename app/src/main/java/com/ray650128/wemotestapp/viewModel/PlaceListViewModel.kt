@@ -12,7 +12,7 @@ import io.realm.Sort
 
 class PlaceListViewModel : ViewModel() {
 
-    val testData: MutableLiveData<Int> by lazy { MutableLiveData<Int>() }
+    val isPlaceDetailShow: MutableLiveData<Boolean> by lazy { MutableLiveData<Boolean>() }
 
     private val realm = Realm.getDefaultInstance()
 
@@ -24,6 +24,10 @@ class PlaceListViewModel : ViewModel() {
 
     val placeData: MutableLiveData<Place?> by lazy {
         MutableLiveData<Place?>()
+    }
+
+    init {
+        isPlaceDetailShow.postValue(false)
     }
 
     fun getData(id: Int) {

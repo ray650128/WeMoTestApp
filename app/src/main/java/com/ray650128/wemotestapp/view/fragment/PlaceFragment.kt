@@ -46,6 +46,13 @@ class PlaceFragment : Fragment() {
         dataId = args.dataId
 
         viewModel.getData(dataId)
+
+        viewModel.isPlaceDetailShow.postValue(true)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.isPlaceDetailShow.postValue(false)
     }
 
     override fun onCreateView(
