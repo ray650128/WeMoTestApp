@@ -10,6 +10,7 @@ import androidx.navigation.Navigation.findNavController
 import com.google.android.material.tabs.TabLayout
 import com.ray650128.wemotestapp.R
 import com.ray650128.wemotestapp.databinding.ActivityMainBinding
+import com.ray650128.wemotestapp.util.PermissionUtil
 import com.ray650128.wemotestapp.viewModel.PlaceListViewModel
 
 class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
@@ -29,6 +30,14 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
             .build()
     }
 
+    private val permissions = arrayOf(
+        android.Manifest.permission.CAMERA,
+        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+        android.Manifest.permission.ACCESS_COARSE_LOCATION,
+        android.Manifest.permission.ACCESS_FINE_LOCATION
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -47,6 +56,21 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
                 binding.toolbar.isVisible = false
             }
         }
+
+        PermissionUtil.checkPermission(this, permissions, object : PermissionUtil.PermissionResultCallback {
+            override fun onGrant() {}
+
+            override fun onDeny(denies: ArrayList<String>?) {}
+        })
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        PermissionUtil.onRequestPermissionsResult(this, requestCode, permissions, grantResults)
     }
 
     private fun initTabLayout() = binding.apply {

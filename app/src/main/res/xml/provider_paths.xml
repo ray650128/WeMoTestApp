@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--    外部儲存空間的根目錄，等同 Environment.getExternalStorageDirectory()獲取的路徑-->
+    <external-path
+        name="external_files"
+        path="."/>
+
+</paths>
