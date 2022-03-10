@@ -40,10 +40,11 @@
             tools:listitem="@layout/item_place_photo"
             tools:itemCount="3"/>
 
-        <View
-            android:id="@+id/view"
+        <fragment
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:id="@+id/map"
             android:layout_width="match_parent"
-            android:layout_height="200dp" />
+            android:layout_height="200dp"/>
 
         <Button
             android:id="@+id/btnAction"

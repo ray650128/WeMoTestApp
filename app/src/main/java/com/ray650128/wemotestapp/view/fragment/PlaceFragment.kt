@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,15 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.ray650128.wemotestapp.R
 import com.ray650128.wemotestapp.databinding.FragmentPlaceBinding
 import com.ray650128.wemotestapp.databinding.FragmentPlaceEditModeBinding
@@ -30,7 +40,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 
 
-class PlaceFragment : Fragment() {
+class PlaceFragment : Fragment(), OnMapReadyCallback {
 
     private val args: PlaceFragmentArgs by navArgs()
 
@@ -48,6 +58,11 @@ class PlaceFragment : Fragment() {
 
     private var photoPath: String = ""
     private var currentPhotoIndex: Int = -1
+
+    private lateinit var mMap: GoogleMap
+
+    private lateinit var marker: Marker
+    private var markerPosition = LatLng(0.0, 0.0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +95,9 @@ class PlaceFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this@PlaceFragment)
 
         viewModel.placeData.observe(viewLifecycleOwner) {
             when (editMode) {
@@ -174,6 +192,8 @@ class PlaceFragment : Fragment() {
 
         photoList = ArrayList(data.photos?.toList() ?: arrayListOf())
 
+        markerPosition = LatLng(data.latitude, data.longitude)
+
         if (photoList.isNotEmpty()) {
             photoListAdapter.updateData(photoList)
 
@@ -222,6 +242,8 @@ class PlaceFragment : Fragment() {
                 content = textContent.text.toString()
                 timestamp = System.currentTimeMillis()
                 photos = realmList
+                latitude = marker.position.latitude
+                longitude = marker.position.longitude
             }
             viewModel.updateData(tempData)
             findNavController().navigateUp()
@@ -253,10 +275,59 @@ class PlaceFragment : Fragment() {
                 content = textContent.text.toString()
                 timestamp = System.currentTimeMillis()
                 photos = realmList
+                latitude = marker.position.latitude
+                longitude = marker.position.longitude
             }
             viewModel.addData(tempData)
             findNavController().navigateUp()
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onMapReady(p0: GoogleMap) {
+        mMap = p0
+
+        mMap.isMyLocationEnabled = true
+
+        if (editMode != VIEW_MODE) {
+            mMap.setOnMapClickListener { latLng ->
+                marker.position = latLng
+            }
+        }
+
+        initLocation()
+        createLocationRequest()
+    }
+
+    // 初始化位置，由於已經先在onMapReady()中要求權限了，因此無需再次要求權限
+    @SuppressLint("MissingPermission")
+    private fun initLocation() {
+        val client = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        client.lastLocation.addOnCompleteListener(requireActivity()) { task ->
+            if (task.isSuccessful) {
+                val location = task.result ?: return@addOnCompleteListener
+                val latLng = LatLng(location.latitude, location.longitude)
+                val camera = CameraUpdateFactory.newLatLngZoom(latLng, mMap.maxZoomLevel)
+                mMap.animateCamera(camera)
+
+                // 位置服務初始化成功後，再將 Marker 加上
+                if (editMode == ADD_MODE) {
+                    markerPosition = latLng
+                }
+                val markerOption = MarkerOptions().apply {
+                    position(markerPosition)
+                }
+                marker = mMap.addMarker(markerOption)!!
+            }
+        }
+    }
+
+    // 設定位置要求的參數
+    @SuppressLint("RestrictedApi")
+    private fun createLocationRequest() {
+        val locationRequest = LocationRequest()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
     companion object {
