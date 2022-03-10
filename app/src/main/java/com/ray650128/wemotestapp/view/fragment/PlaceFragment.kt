@@ -228,6 +228,10 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
             showPhotoPickerMenu()
         }
 
+        photoListAdapter.onItemLongClick = {
+            photoList = photoListAdapter.removeData(it)
+        }
+
         listPhoto.apply {
             adapter = photoListAdapter
             layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
@@ -235,6 +239,7 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
 
         btnAction.text = requireActivity().getString(R.string.text_button_update)
         btnAction.setOnClickListener {
+            if (textTitle.text.isNullOrEmpty()) return@setOnClickListener
             val realmList = RealmList<String>().apply { addAll(photoList) }
             val tempData = Place().apply {
                 id = dataId
@@ -262,12 +267,17 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
             showPhotoPickerMenu()
         }
 
+        photoListAdapter.onItemLongClick = {
+            photoList = photoListAdapter.removeData(it)
+        }
+
         listPhoto.apply {
             adapter = photoListAdapter
             layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
         }
 
         btnAction.setOnClickListener {
+            if (textTitle.text.isNullOrEmpty()) return@setOnClickListener
             photoList = photoListAdapter.getPhotoList()
             val realmList = RealmList<String>().apply { addAll(photoList) }
             val tempData = Place().apply {

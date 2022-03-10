@@ -16,6 +16,8 @@ class PlacePhotoAdapter : RecyclerView.Adapter<PlacePhotoAdapter.MyViewHolder>()
 
     var onItemClick: ((position: Int) -> Unit)? = null
 
+    var onItemLongClick: ((position: Int) -> Unit)? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         mContext = parent.context
         val inflater = LayoutInflater.from(mContext)
@@ -28,6 +30,12 @@ class PlacePhotoAdapter : RecyclerView.Adapter<PlacePhotoAdapter.MyViewHolder>()
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(position)
         }
+        if (mData[position] != "empty_placeholder") {
+            holder.itemView.setOnLongClickListener {
+                onItemLongClick?.invoke(position)
+                true
+            }
+        }
     }
 
     override fun getItemCount(): Int = mData.size
@@ -38,6 +46,16 @@ class PlacePhotoAdapter : RecyclerView.Adapter<PlacePhotoAdapter.MyViewHolder>()
             mData.add("empty_placeholder")
         }
         notifyDataSetChanged()
+    }
+
+    fun removeData(position: Int): ArrayList<String> {
+        mData.removeAt(position)
+        val placeHolderItem = mData.firstOrNull { it == "empty_placeholder" }
+        if (mData.size in 0..2 && placeHolderItem == null) {
+            mData.add("empty_placeholder")
+        }
+        notifyDataSetChanged()
+        return getPhotoList()
     }
 
     fun getPhotoList(): ArrayList<String> {
