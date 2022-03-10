@@ -1,5 +1,22 @@
 <resources>
     <string name="app_name">WeMoTestApp</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="text_hint_title">請輸入標題</string>
+    <string name="text_hint_content">請輸入內容</string>
+
+    <string name="text_button_add">新增</string>
+    <string name="text_button_update">更新</string>
+    <string name="text_button_close">關閉</string>
+    <string name="text_button_list">列表</string>
+    <string name="text_button_map">地圖</string>
+
+    <string-array name="place_menu">
+        <item>編輯</item>
+        <item>刪除</item>
+    </string-array>
+
+    <string-array name="gallery_menu">
+        <item>從相機拍攝</item>
+        <item>從相簿選擇</item>
+    </string-array>
 </resources>

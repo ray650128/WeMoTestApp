@@ -33,6 +33,15 @@
         android:id="@+id/placeFragment"
         android:name="com.ray650128.wemotestapp.view.fragment.PlaceFragment"
         android:label="fragment_place"
-        tools:layout="@layout/fragment_place" />
+        tools:layout="@layout/fragment_place" >
+        <argument
+            android:name="editMode"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <argument
+            android:name="dataId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+    </fragment>
 
 </navigation>

@@ -14,11 +14,11 @@
         android:padding="8dp"
         android:showDividers="middle">
 
-        <TextView
+        <EditText
             android:id="@+id/textTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TextView"
+            android:hint="@string/text_hint_title"
             android:textSize="20sp" />
 
         <TextView
@@ -27,11 +27,11 @@
             android:layout_height="wrap_content"
             android:text="TextView" />
 
-        <TextView
+        <EditText
             android:id="@+id/textContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TextView" />
+            android:hint="@string/text_hint_content" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/listPhoto"

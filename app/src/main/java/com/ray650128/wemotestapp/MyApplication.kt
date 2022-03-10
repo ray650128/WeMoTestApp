@@ -17,6 +17,8 @@ class MyApplication : Application() {
         Realm.init(this)
         val config = RealmConfiguration.Builder()
             .name("WeMoAppTest.realm")
+            .allowQueriesOnUiThread(true)
+            .allowWritesOnUiThread(true)
             .compactOnLaunch()
             .build()
 
