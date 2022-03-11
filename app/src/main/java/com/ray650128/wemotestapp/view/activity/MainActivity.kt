@@ -73,6 +73,9 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         PermissionUtil.onRequestPermissionsResult(this, requestCode, permissions, grantResults)
     }
 
+    /**
+     * 初始化 TabLayout
+     */
     private fun initTabLayout() = binding.apply {
         val listTab = tabLayout.newTab().apply {
             text = getString(R.string.text_button_list)
@@ -88,6 +91,9 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         }
     }
 
+    /**
+     * TabLayout.OnTabSelectedListener.onTabSelected
+     */
     override fun onTabSelected(tab: TabLayout.Tab?) {
         when(tab?.position) {
             0 -> navController.navigate(R.id.toPlaceList, null, navOptions)
@@ -95,8 +101,14 @@ class MainActivity : AppCompatActivity(), TabLayout.OnTabSelectedListener {
         }
     }
 
+    /**
+     * TabLayout.OnTabSelectedListener.onTabUnselected
+     */
     override fun onTabUnselected(tab: TabLayout.Tab?) {}
 
+    /**
+     * TabLayout.OnTabSelectedListener.onTabReselected
+     */
     override fun onTabReselected(tab: TabLayout.Tab?) {}
 
     override fun onBackPressed() {

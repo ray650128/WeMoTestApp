@@ -135,9 +135,12 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * 顯示照片來源選單
+     */
     private fun showPhotoPickerMenu() {
         val popupMenu = AlertDialog.Builder(requireContext()).apply {
-            setTitle("選擇來源")
+            setTitle(getString(R.string.text_photo_picker_title))
             setCancelable(true)
             setItems(R.array.gallery_menu) { dialog, which ->
                 dialog.dismiss()
@@ -150,17 +153,23 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         popupMenu.show()
     }
 
+    /**
+     * 呼叫外部相簿取得照片
+     */
     private fun callGallery() {
         val gallery = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.INTERNAL_CONTENT_URI)
         startActivityForResult(gallery, PICTURE_FROM_GALLERY)
     }
 
+    /**
+     * 呼叫相機取得照片
+     */
     @SuppressLint("SimpleDateFormat")
     private fun callCamera() {
         val camera = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         val date = SimpleDateFormat("yyyyMMddHHmmss").format(System.currentTimeMillis())
         //先新增一張照片
-        val tmpFile = File(context?.getExternalFilesDir(null), "image_$date.jpg")
+        val tmpFile = File(requireContext().getExternalFilesDir(null), "image_$date.jpg")
 
         //建立uri，這邊拿到的格式就會是 content://了
         val outputFileUri = FileProvider.getUriForFile(
@@ -176,6 +185,11 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         startActivityForResult(camera, PICTURE_FROM_CAMERA)
     }
 
+    /**
+     * 取得檔案路徑
+     * @param uri   來源URI
+     * @return  檔案路徑
+     */
     private fun getPathFromUri(uri: Uri): String {
         val projection = arrayOf(MediaStore.MediaColumns.DATA)
         val cursor = requireActivity().contentResolver.query(uri, projection, null, null, null)
@@ -186,6 +200,10 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         return result
     }
 
+    /**
+     * 顯示明細
+     * @param data  傳入的資料
+     */
     private fun viewModeCase(data: Place?) = (binding as FragmentPlaceBinding).apply {
         if (data == null) return@apply
         textTitle.text = data.title
@@ -215,6 +233,10 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * 編輯明細
+     * @param data  傳入的資料
+     */
     private fun editModeCase(data: Place?) = (binding as FragmentPlaceEditModeBinding).apply {
         if (data == null) return@apply
         textTitle.setText(data.title)
@@ -261,6 +283,9 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * 新增資料
+     */
     @SuppressLint("SimpleDateFormat")
     private fun addModeCase() = (binding as FragmentPlaceEditModeBinding).apply {
         btnAction.text = requireActivity().getString(R.string.text_button_add)
@@ -301,9 +326,13 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * OnMapReadyCallback
+     * @param googleMap  Google Map 物件
+     */
     @SuppressLint("MissingPermission")
-    override fun onMapReady(p0: GoogleMap) {
-        mMap = p0
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
 
         mMap.isMyLocationEnabled = true
 
@@ -316,6 +345,9 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         initLocation()
     }
 
+    /**
+     * 初始化定位服務
+     */
     private fun initLocation() {
         val locationUtil = LocationUtil(requireActivity())
         locationUtil.onInitialSuccess = { task ->
@@ -327,6 +359,10 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * 初始化定位點
+     * @param location  GPS位置物件
+     */
     private fun initMarker(location: Location?) {
         if (editMode == ADD_MODE && location != null) {
             markerPosition = LatLng(location.latitude, location.longitude)
@@ -340,10 +376,12 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
     }
 
     companion object {
+        // UI 初始化模式
         const val VIEW_MODE = 0
         const val EDIT_MODE = 1
         const val ADD_MODE = 2
 
+        // 權限 request code
         const val PICTURE_FROM_GALLERY = 1001
         const val PICTURE_FROM_CAMERA = 1002
     }

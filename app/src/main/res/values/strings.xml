@@ -3,6 +3,7 @@
 
     <string name="text_hint_title">請輸入標題</string>
     <string name="text_hint_content">請輸入內容</string>
+    <string name="text_photo_picker_title">選擇來源</string>
 
     <string name="text_button_add">新增</string>
     <string name="text_button_update">更新</string>

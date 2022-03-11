@@ -42,6 +42,9 @@ class PlaceListFragment : BaseFragment<FragmentPlaceListBinding>() {
         }
     }
 
+    /**
+     * 初始化列表
+     */
     private fun initList() = binding.apply {
         listPlace.apply {
             adapter = listAdapter
@@ -61,6 +64,10 @@ class PlaceListFragment : BaseFragment<FragmentPlaceListBinding>() {
         }
     }
 
+    /**
+     * 顯示列表項目功能表
+     * @param item  選中的項目
+     */
     private fun showPlaceMenu(item: Place) {
         val popupMenu = AlertDialog.Builder(requireContext()).apply {
             setTitle(item.title)
@@ -76,6 +83,10 @@ class PlaceListFragment : BaseFragment<FragmentPlaceListBinding>() {
         popupMenu.show()
     }
 
+    /**
+     * 跳轉到編輯頁面
+     * @param id    項目的id
+     */
     private fun gotoEditFragment(id: Int) {
         val action = PlaceListFragmentDirections.listToPlaceDetail(
             editMode = PlaceFragment.EDIT_MODE,
@@ -84,6 +95,9 @@ class PlaceListFragment : BaseFragment<FragmentPlaceListBinding>() {
         navController.navigate(action)
     }
 
+    /**
+     * 初始化 observer
+     */
     private fun initObserver() {
         viewModel.listData.observe(viewLifecycleOwner) {
             listAdapter.submitList(it)

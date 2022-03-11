@@ -30,11 +30,19 @@ class PlaceListViewModel : ViewModel() {
         isPlaceDetailShow.postValue(false)
     }
 
+    /**
+     * 取得資料
+     * @param id    資料的id
+     */
     fun getData(id: Int) {
         val data = realm.where(Place::class.java).equalTo("id", id).findFirst()
         placeData.postValue(data)
     }
 
+    /**
+     * 新增資料
+     * @param item  傳入的資料
+     */
     fun addData(item: Place) = realm.executeTransaction {
         val maxId = it.where(Place::class.java).max("id")
         val nextId = if (maxId == null) 1 else maxId.toInt() + 1
@@ -49,10 +57,18 @@ class PlaceListViewModel : ViewModel() {
         }
     }
 
+    /**
+     * 更新資料
+     * @param item  傳入的資料
+     */
     fun updateData(item: Place) = realm.executeTransaction {
         it.copyToRealmOrUpdate(item)
     }
 
+    /**
+     * 刪除資料
+     * @param id  資料的id
+     */
     fun deleteData(id: Int) = realm.executeTransaction {
         it.where(Place::class.java).equalTo("id", id).findFirst()?.deleteFromRealm()
     }

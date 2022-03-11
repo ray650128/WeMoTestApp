@@ -53,20 +53,30 @@ class MapViewFragment : BaseFragment<FragmentMapViewBinding>(), OnMapReadyCallba
         initObserver()
     }
 
+    /**
+     * 初始化 Google Map
+     */
     private fun initGoogleMap() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this@MapViewFragment)
     }
 
+    /**
+     * 初始化 observer
+     */
     private fun initObserver() {
         viewModel.listData.observe(viewLifecycleOwner) { list ->
             placeList = ArrayList(list)
         }
     }
 
+    /**
+     * OnMapReadyCallback
+     * @param googleMap  Google Map 物件
+     */
     @SuppressLint("MissingPermission")
-    override fun onMapReady(p0: GoogleMap) {
-        mMap = p0
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
 
         mMap.isMyLocationEnabled = true
 
@@ -84,7 +94,9 @@ class MapViewFragment : BaseFragment<FragmentMapViewBinding>(), OnMapReadyCallba
         showMarker()
     }
 
-    // 初始化位置，由於已經先在onMapReady()中要求權限了，因此無需再次要求權限
+    /**
+     * 初始化定位服務
+     */
     @SuppressLint("MissingPermission")
     private fun initLocation() {
         val locationUtil = LocationUtil(requireActivity())
@@ -100,6 +112,9 @@ class MapViewFragment : BaseFragment<FragmentMapViewBinding>(), OnMapReadyCallba
         }
     }
 
+    /**
+     * 顯示定位點
+     */
     private fun showMarker() {
         for (item in placeList) {
             val latLng = LatLng(item.latitude, item.longitude)
