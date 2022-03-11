@@ -22,6 +22,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.ray650128.wemotestapp.R
 import com.ray650128.wemotestapp.databinding.FragmentMapViewBinding
 import com.ray650128.wemotestapp.model.Place
+import com.ray650128.wemotestapp.util.LocationUtil
 import com.ray650128.wemotestapp.viewModel.PlaceListViewModel
 
 
@@ -48,10 +49,13 @@ class MapViewFragment : BaseFragment<FragmentMapViewBinding>(), OnMapReadyCallba
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        initGoogleMap()
+        initObserver()
+    }
+
+    private fun initGoogleMap() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this@MapViewFragment)
-
-        initObserver()
     }
 
     private fun initObserver() {
@@ -76,7 +80,6 @@ class MapViewFragment : BaseFragment<FragmentMapViewBinding>(), OnMapReadyCallba
         }
 
         initLocation()
-        createLocationRequest()
 
         showMarker()
     }
@@ -84,23 +87,17 @@ class MapViewFragment : BaseFragment<FragmentMapViewBinding>(), OnMapReadyCallba
     // 初始化位置，由於已經先在onMapReady()中要求權限了，因此無需再次要求權限
     @SuppressLint("MissingPermission")
     private fun initLocation() {
-        val client = LocationServices.getFusedLocationProviderClient(requireActivity())
-
-        client.lastLocation.addOnCompleteListener(requireActivity()) { task ->
+        val locationUtil = LocationUtil(requireActivity())
+        locationUtil.onInitialSuccess = { task ->
             if (task.isSuccessful) {
-                val location = task.result ?: return@addOnCompleteListener
-                val latLng = LatLng(location.latitude, location.longitude)
-                val camera = CameraUpdateFactory.newLatLngZoom(latLng, mMap.maxZoomLevel)
-                mMap.animateCamera(camera)
+                val location = task.result
+                if (location != null) {
+                    val latLng = LatLng(location.latitude, location.longitude)
+                    val camera = CameraUpdateFactory.newLatLngZoom(latLng, mMap.maxZoomLevel)
+                    mMap.animateCamera(camera)
+                }
             }
         }
-    }
-
-    // 設定位置要求的參數
-    @SuppressLint("RestrictedApi")
-    private fun createLocationRequest() {
-        val locationRequest = LocationRequest()
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
     private fun showMarker() {

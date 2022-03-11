@@ -3,6 +3,7 @@ package com.ray650128.wemotestapp.view.fragment
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Intent
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -33,6 +34,7 @@ import com.ray650128.wemotestapp.R
 import com.ray650128.wemotestapp.databinding.FragmentPlaceBinding
 import com.ray650128.wemotestapp.databinding.FragmentPlaceEditModeBinding
 import com.ray650128.wemotestapp.model.Place
+import com.ray650128.wemotestapp.util.LocationUtil
 import com.ray650128.wemotestapp.view.adapter.PlacePhotoAdapter
 import com.ray650128.wemotestapp.viewModel.PlaceListViewModel
 import io.realm.RealmList
@@ -221,15 +223,19 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
 
         photoList = ArrayList(data.photos?.toList() ?: arrayListOf())
 
-        photoListAdapter.updateData(photoList, true)
+        markerPosition = LatLng(data.latitude, data.longitude)
 
-        photoListAdapter.onItemClick = {
-            currentPhotoIndex = it
-            showPhotoPickerMenu()
-        }
+        photoListAdapter.apply {
+            updateData(photoList, true)
 
-        photoListAdapter.onItemLongClick = {
-            photoList = photoListAdapter.removeData(it)
+            onItemClick = {
+                currentPhotoIndex = it
+                showPhotoPickerMenu()
+            }
+
+            onItemLongClick = {
+                photoList = photoListAdapter.removeData(it)
+            }
         }
 
         listPhoto.apply {
@@ -260,15 +266,17 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         btnAction.text = requireActivity().getString(R.string.text_button_add)
         textUpdateDate.text = SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(System.currentTimeMillis())
 
-        photoListAdapter.updateData(photoList, true)
+        photoListAdapter.apply {
+            updateData(photoList, true)
 
-        photoListAdapter.onItemClick = {
-            currentPhotoIndex = it
-            showPhotoPickerMenu()
-        }
+            onItemClick = {
+                currentPhotoIndex = it
+                showPhotoPickerMenu()
+            }
 
-        photoListAdapter.onItemLongClick = {
-            photoList = photoListAdapter.removeData(it)
+            onItemLongClick = {
+                photoList = photoListAdapter.removeData(it)
+            }
         }
 
         listPhoto.apply {
@@ -306,37 +314,29 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         }
 
         initLocation()
-        createLocationRequest()
     }
 
-    // 初始化位置，由於已經先在onMapReady()中要求權限了，因此無需再次要求權限
-    @SuppressLint("MissingPermission")
     private fun initLocation() {
-        val client = LocationServices.getFusedLocationProviderClient(requireActivity())
-
-        client.lastLocation.addOnCompleteListener(requireActivity()) { task ->
+        val locationUtil = LocationUtil(requireActivity())
+        locationUtil.onInitialSuccess = { task ->
             if (task.isSuccessful) {
-                val location = task.result ?: return@addOnCompleteListener
-
+                val location = task.result
                 // 位置服務初始化成功後，再將 Marker 加上
-                if (editMode == ADD_MODE) {
-                    markerPosition = LatLng(location.latitude, location.longitude)
-                }
-                val camera = CameraUpdateFactory.newLatLngZoom(markerPosition, mMap.maxZoomLevel)
-                mMap.animateCamera(camera)
-                val markerOption = MarkerOptions().apply {
-                    position(markerPosition)
-                }
-                marker = mMap.addMarker(markerOption)!!
+                initMarker(location)
             }
         }
     }
 
-    // 設定位置要求的參數
-    @SuppressLint("RestrictedApi")
-    private fun createLocationRequest() {
-        val locationRequest = LocationRequest()
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+    private fun initMarker(location: Location?) {
+        if (editMode == ADD_MODE && location != null) {
+            markerPosition = LatLng(location.latitude, location.longitude)
+        }
+        val camera = CameraUpdateFactory.newLatLngZoom(markerPosition, mMap.maxZoomLevel)
+        mMap.animateCamera(camera)
+        val markerOption = MarkerOptions().apply {
+            position(markerPosition)
+        }
+        marker = mMap.addMarker(markerOption)!!
     }
 
     companion object {
