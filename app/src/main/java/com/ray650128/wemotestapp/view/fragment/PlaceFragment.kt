@@ -317,14 +317,13 @@ class PlaceFragment : Fragment(), OnMapReadyCallback {
         client.lastLocation.addOnCompleteListener(requireActivity()) { task ->
             if (task.isSuccessful) {
                 val location = task.result ?: return@addOnCompleteListener
-                val latLng = LatLng(location.latitude, location.longitude)
-                val camera = CameraUpdateFactory.newLatLngZoom(latLng, mMap.maxZoomLevel)
-                mMap.animateCamera(camera)
 
                 // 位置服務初始化成功後，再將 Marker 加上
                 if (editMode == ADD_MODE) {
-                    markerPosition = latLng
+                    markerPosition = LatLng(location.latitude, location.longitude)
                 }
+                val camera = CameraUpdateFactory.newLatLngZoom(markerPosition, mMap.maxZoomLevel)
+                mMap.animateCamera(camera)
                 val markerOption = MarkerOptions().apply {
                     position(markerPosition)
                 }
